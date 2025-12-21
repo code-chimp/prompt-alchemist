@@ -1,0 +1,6 @@
+{
+  "*.css": ["stylelint --fix"],
+  "*.{cjs,js,mjs,ts,tsx}": ["eslint --fix"],
+  "src-tauri/src/**/*.rs": ["npm run fix:rust"],
+  "*": ["prettier --write --ignore-unknown"]
+}

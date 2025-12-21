@@ -1,0 +1,10 @@
+{
+  "initializedAt": "2025-12-21T00:16:47.827Z",
+  "projectName": "prompt-alchemist",
+  "version": "0.1.0",
+  "notes": [
+    "This project has been initialized from tauri2-react-starter template.",
+    "If you chose a different license, please update the LICENSE file manually.",
+    "Review and customize the README.md to fit your project needs."
+  ]
+}

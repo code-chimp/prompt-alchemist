@@ -1,0 +1,25 @@
+# Clippy configuration for this project.
+#
+# We intentionally keep this minimal and rely on:
+#   cargo clippy -- -D warnings
+# from the npm script, which:
+#   - uses Clippy's default lint set
+#   - treats any warning as an error
+#
+# This is a good "strict by default" stance without pulling in the
+# extra-noisy pedantic/nursery lints.
+
+# If you later settle on a concrete Minimum Supported Rust Version
+# (MSRV) for this template, you can uncomment and set this:
+#
+# msrv = "1.80"  # Example only; update to actual MSRV.
+
+# If some default lints prove noisy, allow them here instead of
+# weakening the global `-D warnings` in your npm script, e.g.:
+#
+# allow = [
+#   "clippy::module_name_repetitions",
+#   "clippy::too_many_arguments",
+# ]
+#
+# For now, we leave these unset and use Clippy's defaults.
