@@ -1,0 +1,93 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2025-12-21T00:07:15Z",
+    "last_updated": "2025-12-21T00:32:00Z",
+    "completed": "2025-12-21T00:32:00Z"
+  },
+  "mode": "initial_scan",
+  "scan_level": "quick",
+  "project_root": "/Users/timothygoshinski/work/lab/desktop/prompt-alchemist",
+  "output_folder": "/Users/timothygoshinski/work/lab/desktop/prompt-alchemist/_bmad-output",
+  "completed_steps": [
+    {
+      "step": "step_1",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:08:30Z",
+      "summary": "Classified as monolith with 1 part (desktop app)"
+    },
+    {
+      "step": "step_2",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:09:45Z",
+      "summary": "Found 9 existing docs"
+    },
+    {
+      "step": "step_3",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:10:30Z",
+      "summary": "Tech stack: React 19 + Tauri v2 on TypeScript + Rust"
+    },
+    {
+      "step": "step_4",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:11:15Z",
+      "summary": "Conditional analysis complete, pattern-based quick scan"
+    },
+    {
+      "step": "step_5",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:12:00Z",
+      "summary": "Source tree documented"
+    },
+    {
+      "step": "step_6",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:13:30Z",
+      "summary": "Dev/deployment guides written"
+    },
+    {
+      "step": "step_10",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:14:30Z",
+      "summary": "Master index and supporting docs generated"
+    },
+    {
+      "step": "step_11",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:31:00Z",
+      "summary": "Generated component inventory and API contracts"
+    },
+    {
+      "step": "step_12",
+      "status": "completed",
+      "timestamp": "2025-12-21T00:32:00Z",
+      "summary": "Workflow complete"
+    }
+  ],
+  "current_step": "completed",
+  "findings": {
+    "project_classification": "Monolith desktop application, Tauri v2 + React 19",
+    "components_count": 5,
+    "ipc_commands_count": 1,
+    "existing_docs_count": 9
+  },
+  "project_types": [
+    {
+      "part_id": "main",
+      "project_type_id": "desktop",
+      "display_name": "Prompt Alchemist Desktop App"
+    }
+  ],
+  "outputs_generated": [
+    "project-scan-report.json",
+    "source-tree-analysis.md",
+    "development-guide.md",
+    "deployment-guide.md",
+    "project-overview.md",
+    "index.md",
+    "component-inventory.md",
+    "api-contracts.md"
+  ],
+  "resume_instructions": "Workflow completed successfully"
+}
