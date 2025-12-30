@@ -1,0 +1,1494 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prompt Alchemist - Design Directions</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        background: #11111b;
+        color: #cdd6f4;
+        line-height: 1.5;
+      }
+
+      .header {
+        background: #1e1e2e;
+        border-bottom: 1px solid #313244;
+        padding: 24px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #cba6f7;
+        margin-bottom: 8px;
+      }
+
+      .header p {
+        font-size: 14px;
+        color: #bac2de;
+      }
+
+      .navigation {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+
+      .nav-button {
+        background: #313244;
+        border: 1px solid #45475a;
+        color: #cdd6f4;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        white-space: nowrap;
+        transition: all 150ms;
+      }
+
+      .nav-button:hover {
+        background: #45475a;
+        border-color: #585b70;
+      }
+
+      .nav-button.active {
+        background: #cba6f7;
+        color: #1e1e2e;
+        border-color: #cba6f7;
+      }
+
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 32px 24px;
+      }
+
+      .direction {
+        display: none;
+        animation: fadeIn 300ms ease-in;
+      }
+
+      .direction.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .direction-header {
+        margin-bottom: 24px;
+      }
+
+      .direction-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #cba6f7;
+        margin-bottom: 8px;
+      }
+
+      .direction-header p {
+        font-size: 14px;
+        color: #bac2de;
+        max-width: 800px;
+      }
+
+      .mockup-frame {
+        background: #1e1e2e;
+        border: 1px solid #313244;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+
+      .mockup-toolbar {
+        background: #181825;
+        border-bottom: 1px solid #313244;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .traffic-lights {
+        display: flex;
+        gap: 6px;
+      }
+
+      .traffic-light {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .traffic-light.red {
+        background: #f38ba8;
+      }
+      .traffic-light.yellow {
+        background: #f9e2af;
+      }
+      .traffic-light.green {
+        background: #a6e3a1;
+      }
+
+      .mockup-title {
+        font-size: 12px;
+        color: #a6adc8;
+        margin-left: 12px;
+      }
+
+      .mockup-content {
+        display: flex;
+        height: 700px;
+      }
+
+      /* Library Panel */
+      .library-panel {
+        flex: 0 0 35%;
+        background: #1e1e2e;
+        border-right: 1px solid #313244;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .library-header {
+        padding: 16px;
+        border-bottom: 1px solid #313244;
+      }
+
+      .library-search {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #cdd6f4;
+        width: 100%;
+      }
+
+      .library-search::placeholder {
+        color: #6c7086;
+      }
+
+      .library-categories {
+        padding: 12px 16px;
+        border-bottom: 1px solid #313244;
+        display: flex;
+        gap: 8px;
+      }
+
+      .category-tab {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 150ms;
+      }
+
+      .library-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .snippet-item {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 150ms;
+      }
+
+      .snippet-item:hover {
+        background: #45475a;
+        border-color: #585b70;
+      }
+
+      .snippet-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #cdd6f4;
+        margin-bottom: 4px;
+      }
+
+      .snippet-meta {
+        font-size: 12px;
+        color: #a6adc8;
+      }
+
+      /* Preview Panel */
+      .preview-panel {
+        flex: 1;
+        background: #1e1e2e;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .preview-header {
+        padding: 16px;
+        border-bottom: 1px solid #313244;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .framework-select {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #cdd6f4;
+        cursor: pointer;
+      }
+
+      .copy-button {
+        background: #cba6f7;
+        color: #1e1e2e;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms;
+      }
+
+      .copy-button:hover {
+        background: #b794e6;
+      }
+
+      .preview-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+      }
+
+      .framework-section {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .section-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #cba6f7;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .section-content {
+        background: #1e1e2e;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        color: #cdd6f4;
+        min-height: 60px;
+        line-height: 1.6;
+      }
+
+      .tab-stop {
+        display: inline-block;
+        background: #45475a;
+        color: #a6adc8;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        margin: 0 4px;
+      }
+
+      /* Direction 1: Minimal & Spacious */
+      .direction-1 .library-panel {
+        padding: 24px;
+      }
+
+      .direction-1 .snippet-item {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #313244;
+        border-radius: 0;
+        padding: 16px 0;
+      }
+
+      .direction-1 .framework-section {
+        background: transparent;
+        border: 1px solid #313244;
+        padding: 32px;
+        margin-bottom: 24px;
+      }
+
+      /* Direction 2: Dense & Efficient */
+      .direction-2 .library-panel {
+        flex: 0 0 28%;
+      }
+
+      .direction-2 .snippet-item {
+        padding: 8px 12px;
+        margin-bottom: 4px;
+      }
+
+      .direction-2 .framework-section {
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+
+      .direction-2 .section-content {
+        padding: 8px;
+        font-size: 13px;
+        min-height: 40px;
+      }
+
+      /* Direction 3: Card-Heavy */
+      .direction-3 .snippet-item {
+        background: #181825;
+        border: 2px solid #45475a;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .direction-3 .framework-section {
+        background: #181825;
+        border: 2px solid #45475a;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        padding: 24px;
+      }
+
+      /* Direction 4: Flat & Borderless */
+      .direction-4 .snippet-item {
+        background: #181825;
+        border: none;
+        border-left: 3px solid #cba6f7;
+      }
+
+      .direction-4 .framework-section {
+        background: #181825;
+        border: none;
+        border-left: 4px solid #cba6f7;
+      }
+
+      .direction-4 .library-panel {
+        background: #181825;
+      }
+
+      /* Direction 5: Sidebar Navigation */
+      .direction-5 .library-panel {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .direction-5 .library-sidebar {
+        flex: 0 0 60px;
+        background: #181825;
+        border-right: 1px solid #313244;
+        display: flex;
+        flex-direction: column;
+        padding: 12px 8px;
+        gap: 8px;
+      }
+
+      .direction-5 .sidebar-icon {
+        width: 44px;
+        height: 44px;
+        background: #313244;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 150ms;
+      }
+
+      .direction-5 .sidebar-icon:hover {
+        background: #cba6f7;
+      }
+
+      .direction-5 .library-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Direction 6: Tab-Based Categories */
+      .direction-6 .library-categories {
+        background: #181825;
+        padding: 0;
+        gap: 0;
+      }
+
+      .direction-6 .category-tab {
+        flex: 1;
+        padding: 12px;
+        border-radius: 0;
+        border-bottom: 2px solid transparent;
+        text-align: center;
+      }
+
+      .direction-6 .category-tab.active {
+        background: #1e1e2e;
+        border-bottom-color: #cba6f7;
+      }
+
+      /* Direction 7: Search-First */
+      .direction-7 .library-header {
+        padding: 24px;
+      }
+
+      .direction-7 .library-search {
+        padding: 16px;
+        font-size: 16px;
+        border: 2px solid #45475a;
+      }
+
+      .direction-7 .library-search:focus {
+        outline: none;
+        border-color: #cba6f7;
+      }
+
+      /* Direction 8: Split Focus */
+      .direction-8 .library-panel,
+      .direction-8 .preview-panel {
+        flex: 1;
+      }
+
+      .direction-8 .preview-header {
+        background: #181825;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin-top: 32px;
+      }
+
+      .feature-card {
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 8px;
+        padding: 20px;
+      }
+
+      .feature-card h3 {
+        font-size: 16px;
+        color: #cba6f7;
+        margin-bottom: 8px;
+      }
+
+      .feature-card p {
+        font-size: 14px;
+        color: #bac2de;
+        line-height: 1.6;
+      }
+
+      .feature-list {
+        list-style: none;
+        margin-top: 12px;
+      }
+
+      .feature-list li {
+        font-size: 13px;
+        color: #a6adc8;
+        padding: 4px 0;
+        padding-left: 20px;
+        position: relative;
+      }
+
+      .feature-list li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #a6e3a1;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Prompt Alchemist - Design Directions</h1>
+      <p>Explore 8 different visual approaches for the application interface</p>
+      <div class="navigation">
+        <button class="nav-button active" onclick="showDirection(1)">
+          1. Minimal & Spacious
+        </button>
+        <button class="nav-button" onclick="showDirection(2)">2. Dense & Efficient</button>
+        <button class="nav-button" onclick="showDirection(3)">3. Card-Heavy</button>
+        <button class="nav-button" onclick="showDirection(4)">4. Flat & Borderless</button>
+        <button class="nav-button" onclick="showDirection(5)">5. Sidebar Navigation</button>
+        <button class="nav-button" onclick="showDirection(6)">6. Tab-Based Categories</button>
+        <button class="nav-button" onclick="showDirection(7)">7. Search-First</button>
+        <button class="nav-button" onclick="showDirection(8)">8. Split Focus</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Direction 1: Minimal & Spacious -->
+      <div class="direction direction-1 active" id="direction-1">
+        <div class="direction-header">
+          <h2>Direction 1: Minimal & Spacious</h2>
+          <p>
+            Clean lines, generous whitespace, focus on content over chrome. Emphasizes
+            breathing room and clarity.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input
+                  type="text"
+                  class="library-search"
+                  placeholder="Search snippets... (Cmd+K)" />
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Persona • Used 47 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">IDesign Principles</div>
+                  <div class="snippet-meta">Constraint • Used 42 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Clean Code Standards</div>
+                  <div class="snippet-meta">Guardrail • Used 38 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Persona • Used 28 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">SOLID Principles</div>
+                  <div class="snippet-meta">Constraint • Used 24 times</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                  <option>CODER Framework</option>
+                  <option>Co-Star Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop"
+                      >Refactor this service layer to follow dependency injection
+                      patterns...</span
+                    >
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">
+                    Provide the refactored code with inline comments explaining the design
+                    decisions.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>Generous padding (24-32px)</li>
+              <li>Minimal borders and dividers</li>
+              <li>Large touch targets</li>
+              <li>Clean typography hierarchy</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Users who prefer calm, uncluttered interfaces. Prioritizes focus and reduces
+              visual noise. Works well on larger displays (1440px+).
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              Less information density means more scrolling. May feel too sparse for power
+              users who want maximum content per screen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 2: Dense & Efficient -->
+      <div class="direction direction-2" id="direction-2">
+        <div class="direction-header">
+          <h2>Direction 2: Dense & Efficient</h2>
+          <p>
+            Maximum information density with compact spacing. Optimized for power users who
+            want more content visible at once.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input type="text" class="library-search" placeholder="Search... (Cmd+K)" />
+              </div>
+              <div class="library-categories">
+                <div class="category-tab" style="background: #cba6f7; color: #1e1e2e">
+                  Personas
+                </div>
+                <div class="category-tab" style="color: #a6adc8">Constraints</div>
+                <div class="category-tab" style="color: #a6adc8">Guardrails</div>
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Used 47x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">IDesign Principles</div>
+                  <div class="snippet-meta">Used 42x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Clean Code Standards</div>
+                  <div class="snippet-meta">Used 38x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Used 28x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">SOLID Principles</div>
+                  <div class="snippet-meta">Used 24x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">React Best Practices</div>
+                  <div class="snippet-meta">Used 19x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">TypeScript Expert</div>
+                  <div class="snippet-meta">Used 15x</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">API Design Patterns</div>
+                  <div class="snippet-meta">Used 12x</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with
+                    <span class="tab-stop">IDesign</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop">Refactor service layer for DI patterns...</span>
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">Code with inline comments.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>Compact padding (8-16px)</li>
+              <li>Smaller font sizes (13px)</li>
+              <li>Narrow library panel (28%)</li>
+              <li>More items visible per screen</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Power users with large libraries who want to see many snippets at once. Maximizes
+              screen real estate and reduces scrolling.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              Can feel cramped on smaller displays. Requires good eyesight for smaller text.
+              Less breathing room may feel rushed.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 3: Card-Heavy -->
+      <div class="direction direction-3" id="direction-3">
+        <div class="direction-header">
+          <h2>Direction 3: Card-Heavy</h2>
+          <p>
+            Strong card definitions with shadows and borders. Clear visual boundaries between
+            elements create strong hierarchy.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input
+                  type="text"
+                  class="library-search"
+                  placeholder="Search snippets... (Cmd+K)" />
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Persona • Used 47 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">IDesign Principles</div>
+                  <div class="snippet-meta">Constraint • Used 42 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Clean Code Standards</div>
+                  <div class="snippet-meta">Guardrail • Used 38 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Persona • Used 28 times</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop">Refactor this service layer...</span>
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">Provide refactored code with comments.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>Strong borders (2px)</li>
+              <li>Box shadows for depth</li>
+              <li>Clear visual separation</li>
+              <li>Material design influence</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Users who prefer clear visual boundaries. Strong hierarchy makes relationships
+              obvious. Good for complex layouts.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              Heavy visual style may feel too consumer-facing for developer tool. Shadows add
+              visual weight that conflicts with "minimal" goal.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 4: Flat & Borderless -->
+      <div class="direction direction-4" id="direction-4">
+        <div class="direction-header">
+          <h2>Direction 4: Flat & Borderless</h2>
+          <p>
+            Minimal borders, using color and spacing for hierarchy. Clean, modern aesthetic
+            with accent color emphasis.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input
+                  type="text"
+                  class="library-search"
+                  placeholder="Search snippets... (Cmd+K)" />
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Persona • Used 47 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">IDesign Principles</div>
+                  <div class="snippet-meta">Constraint • Used 42 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Clean Code Standards</div>
+                  <div class="snippet-meta">Guardrail • Used 38 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Persona • Used 28 times</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop">Refactor this service layer...</span>
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">Provide refactored code with comments.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>Accent color borders (left edge)</li>
+              <li>Minimal visual chrome</li>
+              <li>Flat elevation hierarchy</li>
+              <li>Clean, modern aesthetic</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Modern, minimalist preference. Accent color provides visual interest without
+              visual weight. Feels very contemporary.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              May lack sufficient visual separation for complex content. Left border pattern
+              might feel trendy rather than timeless.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 5: Sidebar Navigation -->
+      <div class="direction direction-5" id="direction-5">
+        <div class="direction-header">
+          <h2>Direction 5: Sidebar Navigation</h2>
+          <p>
+            Persistent icon-based sidebar for category switching. Inspired by VSCode's activity
+            bar pattern.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-sidebar">
+                <div class="sidebar-icon" style="background: #cba6f7">P</div>
+                <div class="sidebar-icon">C</div>
+                <div class="sidebar-icon">G</div>
+              </div>
+              <div class="library-main">
+                <div class="library-header">
+                  <input type="text" class="library-search" placeholder="Search... (Cmd+K)" />
+                </div>
+
+                <div class="library-list">
+                  <div class="snippet-item">
+                    <div class="snippet-name">Senior C# Developer</div>
+                    <div class="snippet-meta">Used 47 times</div>
+                  </div>
+                  <div class="snippet-item">
+                    <div class="snippet-name">Expert Python Developer</div>
+                    <div class="snippet-meta">Used 28 times</div>
+                  </div>
+                  <div class="snippet-item">
+                    <div class="snippet-name">TypeScript Expert</div>
+                    <div class="snippet-meta">Used 15 times</div>
+                  </div>
+                  <div class="snippet-item">
+                    <div class="snippet-name">React Specialist</div>
+                    <div class="snippet-meta">Used 12 times</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop">Refactor this service layer...</span>
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">Provide refactored code with comments.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>VSCode-inspired sidebar</li>
+              <li>Persistent category access</li>
+              <li>Icon-based navigation</li>
+              <li>Familiar developer pattern</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Users who love VSCode patterns. Category switching is one click away. Feels
+              immediately familiar to developers.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              Uses horizontal space for sidebar. Icons need to be learned initially. May feel
+              like copying VSCode too directly.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 6: Tab-Based Categories -->
+      <div class="direction direction-6" id="direction-6">
+        <div class="direction-header">
+          <h2>Direction 6: Tab-Based Categories</h2>
+          <p>
+            Horizontal tabs for category switching. Clean, conventional pattern with clear
+            active states.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input
+                  type="text"
+                  class="library-search"
+                  placeholder="Search snippets... (Cmd+K)" />
+              </div>
+              <div class="library-categories">
+                <div class="category-tab active">Personas</div>
+                <div class="category-tab">Constraints</div>
+                <div class="category-tab">Guardrails</div>
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Persona • Used 47 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Persona • Used 28 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">TypeScript Expert</div>
+                  <div class="snippet-meta">Persona • Used 15 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">React Specialist</div>
+                  <div class="snippet-meta">Persona • Used 12 times</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop">Refactor this service layer...</span>
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">Provide refactored code with comments.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>Horizontal tab navigation</li>
+              <li>Clear active states</li>
+              <li>Conventional pattern</li>
+              <li>Underline accent indicator</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Universal pattern everyone understands. Active state clear with underline. Works
+              well with 3-5 categories.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              Uses vertical space for tab bar. Doesn't scale well beyond 5 tabs. Feels generic,
+              not distinctive.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 7: Search-First -->
+      <div class="direction direction-7" id="direction-7">
+        <div class="direction-header">
+          <h2>Direction 7: Search-First</h2>
+          <p>
+            Prominent search as primary interaction. Embraces "Search is the Universal Verb"
+            principle fully.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input
+                  type="text"
+                  class="library-search"
+                  placeholder="Search your library... (Cmd+K)"
+                  style="font-size: 16px; padding: 16px" />
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Persona • Used 47 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">IDesign Principles</div>
+                  <div class="snippet-meta">Constraint • Used 42 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Clean Code Standards</div>
+                  <div class="snippet-meta">Guardrail • Used 38 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Persona • Used 28 times</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop">Refactor this service layer...</span>
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">Provide refactored code with comments.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>Large, prominent search bar</li>
+              <li>Search-first interaction model</li>
+              <li>Minimal chrome beyond search</li>
+              <li>Raycast/Spotlight influence</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Power users who search everything. Embraces keyboard-first workflow fully. Aligns
+              with "Search is Universal Verb" principle.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              May not help beginners discover library contents. Requires good search to be
+              useful. Less browsable.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 8: Split Focus -->
+      <div class="direction direction-8" id="direction-8">
+        <div class="direction-header">
+          <h2>Direction 8: Split Focus</h2>
+          <p>
+            Equal visual weight for library and preview panels. Balanced layout treating both
+            panels as co-equal.
+          </p>
+        </div>
+
+        <div class="mockup-frame">
+          <div class="mockup-toolbar">
+            <div class="traffic-lights">
+              <div class="traffic-light red"></div>
+              <div class="traffic-light yellow"></div>
+              <div class="traffic-light green"></div>
+            </div>
+            <div class="mockup-title">Prompt Alchemist</div>
+          </div>
+
+          <div class="mockup-content">
+            <div class="library-panel">
+              <div class="library-header">
+                <input
+                  type="text"
+                  class="library-search"
+                  placeholder="Search snippets... (Cmd+K)" />
+              </div>
+
+              <div class="library-list">
+                <div class="snippet-item">
+                  <div class="snippet-name">Senior C# Developer</div>
+                  <div class="snippet-meta">Persona • Used 47 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">IDesign Principles</div>
+                  <div class="snippet-meta">Constraint • Used 42 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Clean Code Standards</div>
+                  <div class="snippet-meta">Guardrail • Used 38 times</div>
+                </div>
+                <div class="snippet-item">
+                  <div class="snippet-name">Expert Python Developer</div>
+                  <div class="snippet-meta">Persona • Used 28 times</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-panel">
+              <div class="preview-header">
+                <select class="framework-select">
+                  <option>RTF Framework</option>
+                </select>
+                <button class="copy-button">Copy to Clipboard</button>
+              </div>
+
+              <div class="preview-content">
+                <div class="framework-section">
+                  <div class="section-label">Role</div>
+                  <div class="section-content">
+                    You are a <span class="tab-stop">Senior C# Developer</span> with expertise
+                    in <span class="tab-stop">IDesign Principles</span>.
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Task</div>
+                  <div class="section-content">
+                    <span class="tab-stop"
+                      >Refactor this service layer to follow dependency injection
+                      patterns...</span
+                    >
+                  </div>
+                </div>
+
+                <div class="framework-section">
+                  <div class="section-label">Format</div>
+                  <div class="section-content">
+                    Provide refactored code with inline comments explaining design decisions.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Key Characteristics</h3>
+            <ul class="feature-list">
+              <li>50/50 panel split</li>
+              <li>Equal visual hierarchy</li>
+              <li>Balanced layout</li>
+              <li>Symmetrical design</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>Best For</h3>
+            <p>
+              Users who switch between library and preview frequently. Treats both panels as
+              equally important. Good for large displays.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Trade-offs</h3>
+            <p>
+              Preview panel is primary focus—50/50 split may give too much space to library.
+              Less efficient use of screen real estate.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showDirection(num) {
+        // Hide all directions
+        document.querySelectorAll('.direction').forEach(dir => {
+          dir.classList.remove('active');
+        });
+
+        // Remove active class from all buttons
+        document.querySelectorAll('.nav-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+
+        // Show selected direction
+        document.getElementById('direction-' + num).classList.add('active');
+
+        // Highlight selected button
+        document.querySelectorAll('.nav-button')[num - 1].classList.add('active');
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    </script>
+  </body>
+</html>
