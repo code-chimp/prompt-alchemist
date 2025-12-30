@@ -89,17 +89,19 @@ workflow_status:
     required: true
     workflows:
       - id: 'create-architecture'
-        status: 'recommended'
+        status: '_bmad-output/architecture.md'
         agent: 'architect'
         command: 'create-architecture'
         output: 'Integration architecture - solution design for THIS project'
-        note: 'HIGHLY RECOMMENDED: Distills massive brownfield context into focused solution design'
+        note: 'Completed: 6 steps, comprehensive architecture with Zustand, fuse.js, Rust IPC'
+        completed: '2025-12-29'
 
       - id: 'create-epics-and-stories'
-        status: 'required'
+        status: '_bmad-output/epics.md'
         agent: 'pm'
         command: 'create-epics-and-stories'
-        note: 'Break down PRD into implementable epics and stories'
+        note: 'Completed: 6 epics, 40+ stories, full requirements coverage'
+        completed: '2025-12-29'
 
       - id: 'test-design'
         status: 'recommended'
