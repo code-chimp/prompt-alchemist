@@ -76,11 +76,12 @@ workflow_status:
         completed: '2025-12-28'
 
       - id: 'create-ux-design'
-        status: 'conditional'
+        status: '_bmad-output/ux-design-specification.md'
         agent: 'ux-designer'
         command: 'create-ux-design'
         condition: 'if_has_ui'
-        note: 'Required if project has UI (which Prompt Alchemist does)'
+        note: 'Completed: 14 steps, comprehensive UX patterns, accessibility strategy'
+        completed: '2025-12-29'
 
   # Phase 2 - Solutioning
   phase_2:
