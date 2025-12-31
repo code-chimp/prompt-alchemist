@@ -68,7 +68,7 @@ workflow_status:
     required: true
     workflows:
       - id: 'prd'
-        status: '_bmad-output/prd.md'
+        status: '_bmad-output/project-planning-artifacts/prd.md'
         agent: 'pm'
         command: 'prd'
         output: 'PRD focused on new features/changes'
@@ -76,7 +76,7 @@ workflow_status:
         completed: '2025-12-28'
 
       - id: 'create-ux-design'
-        status: '_bmad-output/ux-design-specification.md'
+        status: '_bmad-output/project-planning-artifacts/ux-design-specification.md'
         agent: 'ux-designer'
         command: 'create-ux-design'
         condition: 'if_has_ui'
@@ -89,7 +89,7 @@ workflow_status:
     required: true
     workflows:
       - id: 'create-architecture'
-        status: '_bmad-output/architecture.md'
+        status: '_bmad-output/project-planning-artifacts/architecture.md'
         agent: 'architect'
         command: 'create-architecture'
         output: 'Integration architecture - solution design for THIS project'
@@ -97,7 +97,7 @@ workflow_status:
         completed: '2025-12-29'
 
       - id: 'create-epics-and-stories'
-        status: '_bmad-output/epics.md'
+        status: '_bmad-output/project-planning-artifacts/epics.md'
         agent: 'pm'
         command: 'create-epics-and-stories'
         note: 'Completed: 6 epics, 40+ stories, full requirements coverage'
