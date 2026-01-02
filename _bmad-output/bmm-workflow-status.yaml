@@ -104,11 +104,12 @@ workflow_status:
         completed: '2025-12-29'
 
       - id: 'test-design'
-        status: 'recommended'
+        status: '_bmad-output/test-design-system.md'
         agent: 'tea'
         command: 'test-design'
         output: 'System-level testability review'
-        note: 'Testability assessment before gate check'
+        note: 'Completed: 4 ASRs identified, 70/20/10 test strategy, 9 Sprint 0 recommendations'
+        completed: '2026-01-01'
 
       - id: 'validate-architecture'
         status: 'optional'
@@ -116,10 +117,11 @@ workflow_status:
         command: 'validate-architecture'
 
       - id: 'implementation-readiness'
-        status: 'required'
+        status: '_bmad-output/project-planning-artifacts/implementation-readiness-report-2026-01-01.md'
         agent: 'architect'
         command: 'implementation-readiness'
-        note: 'Validates PRD + Architecture + Epics + UX'
+        note: 'Completed: All artifacts validated, ZERO critical issues, HIGH confidence, READY FOR IMPLEMENTATION'
+        completed: '2026-01-01'
 
   # Phase 3 - Implementation
   phase_3:

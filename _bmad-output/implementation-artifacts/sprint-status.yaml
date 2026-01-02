@@ -1,0 +1,94 @@
+# generated: 2026-01-01
+# project: prompt-alchemist
+# project_key: prompt-alchemist
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-01-01
+project: prompt-alchemist
+project_key: prompt-alchemist
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: backlog
+  1-1-catppuccin-theme-system-implementation: backlog
+  1-2-three-panel-layout-with-resizable-panels: backlog
+  1-3-zustand-state-management-setup: backlog
+  1-4-tauri-ipc-commands-for-file-system-operations: backlog
+  1-5-platform-specific-configuration-and-path-resolution: backlog
+  1-6-window-state-persistence: backlog
+  1-7-cold-start-performance-optimization: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-json-schema-v1-0-0-with-versioning: backlog
+  2-2-snippet-creation-with-dialog-and-validation: backlog
+  2-3-display-snippet-library-in-browsable-list: backlog
+  2-4-snippet-editing-functionality: backlog
+  2-5-snippet-deletion-with-confirmation: backlog
+  2-6-auto-save-with-atomic-writes: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-framework-templates-with-section-definitions: backlog
+  3-2-framework-selector-dropdown-with-descriptions: backlog
+  3-3-render-framework-sections-as-editable-textareas: backlog
+  3-4-real-time-preview-updates: backlog
+  3-5-framework-switching-during-composition: backlog
+  3-6-clipboard-copy-with-visual-feedback: backlog
+  3-7-markdown-export-format-for-llm-compatibility: backlog
+  3-8-hybrid-editing-structured-sections-freeform-text: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-cmd-k-global-search-command-palette: backlog
+  4-2-fuse-js-fuzzy-matching-integration: backlog
+  4-3-frecency-ranking-algorithm: backlog
+  4-4-keyboard-navigation-through-search-results: backlog
+  4-5-snippet-insertion-from-search-results: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-drag-and-drop-snippets-from-library-to-preview: backlog
+  5-2-search-enabled-tab-stops-in-framework-sections: backlog
+  5-3-context-aware-search-filtering-at-tab-stops: backlog
+  5-4-ghost-text-completions-based-on-snippet-suggestions: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-global-keyboard-shortcuts-with-platform-mapping: backlog
+  6-2-tab-shift-tab-focus-management-across-panels: backlog
+  6-3-wcag-compliant-focus-indicators: backlog
+  6-4-cmd-1-2-3-sidebar-category-switching: backlog
+  6-5-undo-redo-stack-cmd-z-cmd-shift-z: backlog
+  epic-6-retrospective: optional
