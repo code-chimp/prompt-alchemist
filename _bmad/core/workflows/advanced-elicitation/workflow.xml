@@ -1,5 +1,5 @@
-<task id="_bmad/core/tasks/advanced-elicitation.xml" name="Advanced Elicitation" standalone="true"
-  methods="{project-root}/_bmad/core/tasks/advanced-elicitation-methods.csv"
+<task id="_bmad/core/workflows/advanced-elicitation/workflow.xml" name="Advanced Elicitation" standalone="true"
+  methods="{project-root}/_bmad/core/workflows/advanced-elicitation/methods.csv"
   agent-party="{project-root}/_bmad/_config/agent-manifest.csv">
   <llm critical="true">
     <i>MANDATORY: Execute ALL steps in the flow section IN EXACT ORDER</i>
@@ -7,6 +7,7 @@
     <i>HALT immediately when halt-conditions are met</i>
     <i>Each action xml tag within step xml tag is a REQUIRED action to complete that step</i>
     <i>Sections outside flow (validation, output, critical-context) provide essential context - review and apply throughout execution</i>
+    <i>YOU MUST ALWAYS SPEAK OUTPUT In your Agent communication style with the `communication_language`</i>
   </llm>
 
   <integration description="When called from workflow">
