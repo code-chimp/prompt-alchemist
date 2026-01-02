@@ -266,6 +266,27 @@ This document provides the complete epic and story breakdown for prompt-alchemis
 
 ## Epic List
 
+### Epic 0: CI/CD & Release Infrastructure
+Establish automated testing, multi-platform builds, and release automation to ensure code quality, prevent regressions, and streamline deployments. This foundational infrastructure enables rapid development with confidence across all platforms (macOS, Windows, Linux) before any product features are implemented.
+
+**FRs covered:** None (infrastructure supporting NFR-R7: E2E test suite passes on all three platforms before every release)
+
+**NFRs supported:**
+- NFR-R6: All core functional requirements behave identically across macOS, Windows, and Linux
+- NFR-R7: E2E test suite passes on all three platforms (Mac, Windows, Linux) before every release
+- NFR-R8: Application handles file system errors gracefully without crashing (validated via CI tests)
+
+**Implementation notes:**
+- Two GitHub Actions workflows: `ci-integration.yml` (for `integration` branch) and `ci-main.yml` (for `main` branch + releases)
+- Integration workflow: lint, type checking, unit tests (Vitest), E2E tests (Playwright), Rust tests (Cargo), build verification (macOS only)
+- Main workflow: same quality gates + multi-platform builds (macOS, Windows, Linux) + release automation on version tags
+- Branch protection rules enforce all checks must pass before merging
+- Dependabot configuration for automated dependency updates (npm, Cargo, GitHub Actions)
+- Caching strategy for npm dependencies and Rust/Cargo to optimize pipeline speed (<7 min for integration, <20 min for main)
+- Release artifacts: .dmg/.app (macOS), .exe/.msi (Windows), .deb/.AppImage (Linux)
+
+---
+
 ### Epic 1: Foundation & Application Shell
 Users can launch a cross-platform desktop application with professional visual design, platform-specific configuration, and sub-2-second startup times. The application provides the foundational UI shell (sidebar navigation, resizable panels, Catppuccin themes) and architectural infrastructure (Zustand state, Tauri IPC, JSON persistence) that all subsequent epics build upon.
 
@@ -358,6 +379,416 @@ Users can navigate the entire application via keyboard shortcuts, achieving flow
 - Undo/redo stack (Cmd+Z) for snippet insertions and text edits
 - All shortcuts displayed in tooltips and help documentation
 - Screen reader announcements for dynamic changes (ARIA live regions)
+
+## Epic 0: CI/CD & Release Infrastructure
+
+Establish automated testing, multi-platform builds, and release automation to ensure code quality, prevent regressions, and streamline deployments. This foundational infrastructure enables rapid development with confidence across all platforms (macOS, Windows, Linux) before any product features are implemented.
+
+### Story 0.1: GitHub Actions Integration Workflow - Quality Gates
+
+As a developer,
+I want automated quality gates (linting, type checking, tests) to run on every commit to the `integration` branch,
+So that code quality issues are caught immediately and the team has confidence before merging to `main`.
+
+**Acceptance Criteria:**
+
+**Given** the `.github/workflows/ci-integration.yml` file is created
+**When** a commit is pushed to the `integration` branch
+**Then** the GitHub Actions workflow is triggered automatically
+**And** the workflow appears in the Actions tab within 10 seconds
+
+**Given** the integration workflow runs
+**When** executing the `lint` job
+**Then** the job runs on `ubuntu-latest` runner
+**And** Node.js 24.12.0 is set up (matching project's Volta configuration)
+**And** npm dependencies are installed via `npm ci`
+**And** `npm run lint` executes successfully
+**And** the job completes within 2 minutes
+**And** ESLint, Prettier, Stylelint, and Rust linters all pass
+
+**Given** the integration workflow runs
+**When** executing the `typecheck` job
+**Then** the job runs on `ubuntu-latest` runner
+**And** `npm run check:types` executes successfully
+**And** `npm run check:lockfile` validates the package-lock.json
+**And** the job completes within 1 minute
+**And** no TypeScript compilation errors are reported
+
+**Given** the integration workflow runs
+**When** executing the `test-unit` job
+**Then** the job runs on `ubuntu-latest` runner
+**And** `npm run test:unit` executes successfully
+**And** all Vitest unit tests pass
+**And** the job completes within 3 minutes
+**And** coverage reports are uploaded as artifacts (retention: 7 days)
+
+**Given** the integration workflow runs
+**When** executing the `test-e2e` job
+**Then** the job runs on `ubuntu-latest` runner
+**And** Playwright browsers are installed via `npx playwright install --with-deps chromium`
+**And** `npm run test:e2e` executes successfully
+**And** all E2E tests pass
+**And** the job completes within 5 minutes
+**And** Playwright HTML report is uploaded as artifact on failure (retention: 7 days)
+
+**Given** the integration workflow runs
+**When** executing the `test-rust` job
+**Then** the job runs on `ubuntu-latest` runner
+**And** Rust toolchain is set up (stable, with rustfmt and clippy components)
+**And** Cargo dependencies are cached using `actions/cache@v4`
+**And** `npm run test:rust` executes successfully
+**And** all Rust unit tests pass
+**And** the job completes within 3 minutes
+
+**Given** all quality gate jobs pass
+**When** executing the `build-check` job
+**Then** the job runs on `macos-latest` runner (representative platform)
+**And** the job depends on: `lint`, `typecheck`, `test-unit`, `test-e2e`, `test-rust` (runs only if all pass)
+**And** Rust toolchain is set up
+**And** `npm run build` executes successfully (frontend build)
+**And** `npm run tauri build -- --debug` executes successfully (Tauri debug build)
+**And** the job completes within 7 minutes
+**And** build artifacts are verified to exist
+
+**Given** any job fails
+**When** the workflow completes
+**Then** the workflow status is marked as "failed"
+**And** the commit shows a red "X" on GitHub
+**And** detailed error logs are available in the Actions tab
+**And** notifications are sent to the repository (per GitHub notification settings)
+
+**Given** the workflow uses concurrency control
+**When** a new commit is pushed while a workflow is running
+**Then** the in-progress workflow is cancelled automatically
+**And** the new workflow starts immediately
+**And** CI resources are not wasted on outdated commits
+
+---
+
+### Story 0.2: GitHub Actions Main/Release Workflow - Multi-Platform Builds
+
+As a developer,
+I want automated multi-platform builds (macOS, Windows, Linux) to run on every commit to `main`,
+So that production builds are validated across all target platforms before release.
+
+**Acceptance Criteria:**
+
+**Given** the `.github/workflows/ci-main.yml` file is created
+**When** a commit is pushed to the `main` branch
+**Then** the GitHub Actions workflow is triggered automatically
+**And** the workflow includes the same quality gate jobs as integration (lint, typecheck, test-unit, test-e2e, test-rust)
+
+**Given** all quality gate jobs pass on `main`
+**When** executing the `build` job
+**Then** a build matrix is used with three platforms:
+  - `macos-latest` (target: `universal-apple-darwin`)
+  - `ubuntu-latest` (target: `x86_64-unknown-linux-gnu`)
+  - `windows-latest` (target: `x86_64-pc-windows-msvc`)
+**And** all three builds run in parallel
+**And** the `fail-fast` strategy is disabled (all platforms complete even if one fails)
+
+**Given** the macOS build job runs
+**When** executing on `macos-latest`
+**Then** Node.js 24.12.0 is set up
+**And** Rust toolchain is set up with `universal-apple-darwin` target
+**And** Cargo dependencies are cached
+**And** `npm ci` installs dependencies
+**And** `npm run build` builds the frontend
+**And** `npm run tauri:build` builds the Tauri application
+**And** the job completes within 15 minutes
+**And** artifacts are uploaded:
+  - `src-tauri/target/release/bundle/dmg/*.dmg`
+  - `src-tauri/target/release/bundle/macos/*.app`
+**And** artifacts are retained for 7 days
+
+**Given** the Linux build job runs
+**When** executing on `ubuntu-latest`
+**Then** system dependencies are installed: `libwebkit2gtk-4.1-dev`, `build-essential`, `libssl-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`
+**And** Rust toolchain is set up with `x86_64-unknown-linux-gnu` target
+**And** `npm run tauri:build` builds the Tauri application
+**And** the job completes within 15 minutes
+**And** artifacts are uploaded:
+  - `src-tauri/target/release/bundle/deb/*.deb`
+  - `src-tauri/target/release/bundle/appimage/*.AppImage`
+
+**Given** the Windows build job runs
+**When** executing on `windows-latest`
+**Then** Rust toolchain is set up with `x86_64-pc-windows-msvc` target
+**And** `npm run tauri:build` builds the Tauri application
+**And** the job completes within 15 minutes
+**And** artifacts are uploaded:
+  - `src-tauri/target/release/bundle/msi/*.msi`
+  - `src-tauri/target/release/bundle/nsis/*.exe`
+
+**Given** any platform build fails
+**When** the workflow completes
+**Then** the specific platform's failure is clearly reported
+**And** other platforms still complete their builds
+**And** the overall workflow status is "failed"
+
+**Given** all platform builds succeed
+**When** the workflow completes
+**Then** the workflow status is marked as "success"
+**And** the commit shows a green checkmark on GitHub
+**And** all build artifacts are available for download from the Actions tab
+
+---
+
+### Story 0.3: Release Automation with Version Tags
+
+As a developer,
+I want releases to be created automatically when I push a version tag (e.g., `v0.1.0`),
+So that production deployments are streamlined with downloadable artifacts for all platforms.
+
+**Acceptance Criteria:**
+
+**Given** the `ci-main.yml` workflow includes a `release` job
+**When** the `release` job is defined
+**Then** the job depends on the `build` job (all platforms)
+**And** the job runs on `ubuntu-latest`
+**And** the job is conditional: `if: startsWith(github.ref, 'refs/tags/v')`
+**And** the job has `contents: write` permission for creating releases
+
+**Given** a version tag is pushed (e.g., `git tag v0.1.0 && git push --tags`)
+**When** the workflow is triggered
+**Then** the `main` workflow runs with all quality gates and multi-platform builds
+**And** the `release` job executes only if the tag starts with `v`
+
+**Given** the `release` job executes
+**When** downloading artifacts
+**Then** `actions/download-artifact@v4` is used to download all build artifacts:
+  - `macos-builds` (from macOS job)
+  - `windows-builds` (from Windows job)
+  - `linux-builds` (from Linux job)
+**And** artifacts are downloaded to `./artifacts` directory
+**And** artifact structure is verified with `ls -R ./artifacts`
+
+**Given** all artifacts are downloaded
+**When** creating the GitHub release
+**Then** `softprops/action-gh-release@v1` is used to create the release
+**And** the release is marked as `draft: true` (requires manual publish)
+**And** release notes are generated automatically via `generate_release_notes: true`
+**And** all artifacts are uploaded to the release:
+  - `./artifacts/macos-builds/**/*` (DMG and .app bundles)
+  - `./artifacts/windows-builds/**/*` (MSI and EXE installers)
+  - `./artifacts/linux-builds/**/*` (DEB and AppImage packages)
+
+**Given** the release is created
+**When** navigating to the Releases page on GitHub
+**Then** a draft release with the tag name (e.g., `v0.1.0`) is visible
+**And** all platform artifacts are attached to the release
+**And** auto-generated release notes include commits since the last tag
+**And** the release can be edited and published manually by the maintainer
+
+**Given** the release creation fails (e.g., artifact upload error)
+**When** the job fails
+**Then** detailed error logs are available in the Actions tab
+**And** the workflow status is "failed"
+**And** no partial release is created (release is atomic)
+
+**Given** a non-version tag is pushed (e.g., `test-tag` without `v` prefix)
+**When** the workflow runs
+**Then** the `release` job is skipped
+**And** only the build jobs execute (no release created)
+
+---
+
+### Story 0.4: Branch Protection Rules & Dependabot Configuration
+
+As a developer,
+I want branch protection rules and automated dependency updates configured,
+So that code quality is enforced and dependencies stay up-to-date automatically.
+
+**Acceptance Criteria:**
+
+**Given** the `integration` branch exists
+**When** configuring branch protection rules via GitHub repository settings
+**Then** the following rules are enabled:
+  - ✅ Require status checks to pass before merging
+  - ✅ Required checks: `lint`, `typecheck`, `test-unit`, `test-e2e`, `test-rust`, `build-check`
+  - ✅ Require branches to be up to date before merging
+  - ❌ Require pull request reviews: 0 (optional for integration)
+  - ✅ Allow force pushes: disabled
+  - ✅ Allow deletions: disabled
+
+**Given** the `main` branch exists
+**When** configuring branch protection rules
+**Then** the following rules are enabled:
+  - ✅ Require status checks to pass before merging
+  - ✅ Required checks: `lint`, `typecheck`, `test-unit`, `test-e2e`, `test-rust`, `build / macos-latest`, `build / ubuntu-latest`, `build / windows-latest`
+  - ✅ Require branches to be up to date before merging
+  - ✅ Require pull request reviews: 1 (recommended for production)
+  - ✅ Restrict push access: Admins only
+  - ✅ Allow force pushes: disabled
+  - ✅ Allow deletions: disabled
+
+**Given** the `.github/dependabot.yml` file is created
+**When** the file is committed to the repository
+**Then** Dependabot is configured with three ecosystems:
+  1. **npm** (JavaScript/TypeScript dependencies)
+     - Directory: `/`
+     - Schedule: weekly (Monday 9:00 AM)
+     - Open PRs limit: 5
+     - Labels: `dependencies`, `npm`
+     - Commit prefix: `chore(deps)`
+  2. **cargo** (Rust dependencies)
+     - Directory: `/src-tauri`
+     - Schedule: weekly (Monday 9:00 AM)
+     - Open PRs limit: 5
+     - Labels: `dependencies`, `rust`
+     - Commit prefix: `chore(deps)`
+  3. **github-actions** (GitHub Actions workflow dependencies)
+     - Directory: `/`
+     - Schedule: weekly (Monday 9:00 AM)
+     - Open PRs limit: 3
+     - Labels: `dependencies`, `github-actions`
+     - Commit prefix: `chore(deps)`
+
+**Given** Dependabot is configured
+**When** a new week starts (Monday 9:00 AM)
+**Then** Dependabot automatically checks for dependency updates
+**And** PRs are created for outdated dependencies (up to the limit per ecosystem)
+**And** each PR includes changelog/release notes for the update
+**And** PRs trigger the integration workflow (CI validates the update)
+
+**Given** a Dependabot PR is created
+**When** the integration workflow runs
+**Then** all quality gates (lint, tests, build) run automatically
+**And** if all checks pass, the PR shows "All checks have passed"
+**And** the PR can be merged safely (no manual testing required for minor updates)
+
+**Given** branch protection is enabled
+**When** attempting to merge a PR with failing checks
+**Then** GitHub blocks the merge
+**And** an error message is displayed: "Required status checks have not passed"
+**And** the PR cannot be merged until all checks pass
+
+**Given** branch protection is enabled on `main`
+**When** attempting to push directly to `main`
+**Then** the push is rejected (only admins or via merged PRs)
+**And** an error message is displayed: "Branch protection rules prevent direct pushes"
+
+---
+
+### Story 0.5: Pipeline Optimization with Caching
+
+As a developer,
+I want CI/CD pipelines optimized with caching,
+So that workflows run faster and consume fewer CI minutes.
+
+**Acceptance Criteria:**
+
+**Given** npm dependencies are installed in workflows
+**When** using `actions/setup-node@v4`
+**Then** the `cache: 'npm'` option is enabled
+**And** npm dependencies are cached based on `package-lock.json` hash
+**And** cache is automatically restored on subsequent runs
+**And** cache misses result in full `npm ci` installation (<2 minutes)
+**And** cache hits reduce dependency installation to <30 seconds
+
+**Given** Rust/Cargo dependencies are built in workflows
+**When** using Rust toolchain in jobs
+**Then** `actions/cache@v4` is configured to cache:
+  - `~/.cargo/bin/`
+  - `~/.cargo/registry/index/`
+  - `~/.cargo/registry/cache/`
+  - `~/.cargo/git/db/`
+  - `src-tauri/target/`
+**And** cache key is based on `Cargo.lock` hash: `${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}`
+**And** restore-keys allow partial matches: `${{ runner.os }}-cargo-`
+
+**Given** caching is enabled
+**When** running the integration workflow
+**Then** the total pipeline time is <7 minutes (target from BMAD Master's plan)
+**And** the `build-check` job completes in <7 minutes (down from ~10-15 minutes without cache)
+
+**Given** caching is enabled
+**When** running the main workflow
+**Then** multi-platform builds complete in <20 minutes total (target)
+**And** each platform build completes in <15 minutes (down from ~20-25 minutes without cache)
+
+**Given** the cache is populated
+**When** measuring cache hit rate over 10 workflow runs
+**Then** the cache hit rate is >80% (target from BMAD Master's plan)
+**And** workflows with cache hits are 30-50% faster than cache misses
+
+**Given** the `Cargo.lock` file changes
+**When** the workflow runs
+**Then** the Rust cache is invalidated (cache miss)
+**And** Cargo dependencies are rebuilt from scratch
+**And** the new cache is stored for future runs
+
+**Given** the `package-lock.json` file changes
+**When** the workflow runs
+**Then** the npm cache is invalidated (cache miss)
+**And** npm dependencies are installed from scratch via `npm ci`
+**And** the new cache is stored for future runs
+
+**Given** caching reduces workflow times
+**When** measuring performance improvements
+**Then** the integration workflow averages <7 minutes (vs ~10 minutes without cache)
+**And** the main workflow averages <20 minutes (vs ~30 minutes without cache)
+**And** CI minute consumption is reduced by 25-30%
+
+---
+
+### Story 0.6: Documentation & Status Badges
+
+As a developer,
+I want CI/CD pipeline documentation and GitHub status badges,
+So that the team understands how to use workflows and can see build status at a glance.
+
+**Acceptance Criteria:**
+
+**Given** the CI/CD workflows are implemented
+**When** the README.md file is updated
+**Then** GitHub Actions status badges are added at the top:
+  - Integration status: `[![CI - Integration](https://github.com/{owner}/{repo}/actions/workflows/ci-integration.yml/badge.svg?branch=integration)](https://github.com/{owner}/{repo}/actions/workflows/ci-integration.yml)`
+  - Main/Release status: `[![CI/CD - Main & Release](https://github.com/{owner}/{repo}/actions/workflows/ci-main.yml/badge.svg?branch=main)](https://github.com/{owner}/{repo}/actions/workflows/ci-main.yml)`
+**And** badges show real-time build status (passing/failing)
+**And** badges are clickable and link to the Actions tab
+
+**Given** CI/CD documentation is needed
+**When** creating `docs/cicd.md` (or updating existing docs)
+**Then** the documentation includes:
+  - Overview of the two workflows (integration vs main)
+  - Branch strategy explanation (`integration` for QA, `main` for releases)
+  - How to trigger workflows (push, PR, manual dispatch)
+  - Quality gates explanation (what each job does)
+  - How to create a release (tag with `v` prefix: `git tag v0.1.0 && git push --tags`)
+  - How to download build artifacts from Actions tab
+  - Troubleshooting common issues (lockfile errors, Playwright failures, Tauri build errors)
+  - Expected pipeline times (integration: <7 min, main: <20 min)
+
+**Given** the team needs workflow status visibility
+**When** navigating to the GitHub repository
+**Then** the README badges immediately show build status
+**And** clicking a badge navigates to the Actions tab with filtered workflow runs
+**And** the most recent workflow run is visible at the top
+
+**Given** a workflow fails
+**When** viewing the Actions tab
+**Then** the failed job is clearly highlighted in red
+**And** error logs are expandable and searchable
+**And** the specific step that failed is identified
+**And** re-run buttons are available to retry failed jobs
+
+**Given** the team needs to understand caching
+**When** reading the documentation
+**Then** caching strategy is explained:
+  - npm cache (based on `package-lock.json`)
+  - Cargo cache (based on `Cargo.lock`)
+  - Cache locations and invalidation rules
+  - How to clear cache manually (GitHub Actions UI: Settings → Actions → Caches)
+
+**Given** the documentation is complete
+**When** a new team member joins
+**Then** they can read `docs/cicd.md` and understand:
+  - How to work with the `integration` and `main` branches
+  - What checks will run on their PRs
+  - How to interpret workflow results
+  - How to create a release
+  - Where to find troubleshooting help
 
 ## Epic 1: Foundation & Application Shell
 
