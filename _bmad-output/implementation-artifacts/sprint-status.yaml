@@ -44,7 +44,7 @@ development_status:
   0-1-github-actions-integration-workflow-quality-gates: done
   0-2-github-actions-main-release-workflow-multi-platform-builds: done
   0-3-release-automation-with-version-tags: done
-  0-4-branch-protection-rules-dependabot-configuration: ready-for-dev
+  0-4-branch-protection-rules-dependabot-configuration: done
   0-5-pipeline-optimization-with-caching: ready-for-dev
   0-6-documentation-status-badges: ready-for-dev
   epic-0-retrospective: optional
