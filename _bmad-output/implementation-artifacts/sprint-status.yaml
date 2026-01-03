@@ -46,7 +46,7 @@ development_status:
   0-3-release-automation-with-version-tags: done
   0-4-branch-protection-rules-dependabot-configuration: done
   0-5-pipeline-optimization-with-caching: done
-  0-6-documentation-status-badges: ready-for-dev
+  0-6-documentation-status-badges: review
   epic-0-retrospective: optional
 
   epic-1: backlog

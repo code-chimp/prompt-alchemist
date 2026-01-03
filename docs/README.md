@@ -9,7 +9,7 @@ Welcome to the Tauri v2 React Starter Application documentation. This folder con
 If you update architecture, scripts, or stack, please keep these docs in sync.
 
 ## Table of Contents
- 
+  
 - [Getting Started](./0-getting-started.md)
 - [Architecture](./1-architecture.md)
 - [Tech Stack](./2-tech-stack.md)
@@ -17,9 +17,13 @@ If you update architecture, scripts, or stack, please keep these docs in sync.
 - [Testing Guide](./4-testing-guide.md)
 - [Contributing](./5-contributing.md)
 - [Personalizing](./6-personalizing.md)
-- [TECH_DEBT](../TECH_DEBT.md) — From template to production
- 
+- [TECH_DEBT](../TECH_DEBT.md) 	From template to production
+  
+## CI/CD & Deployment
+- [CI/CD Pipeline Guide](./cicd.md) - Workflows, branch strategy, release process
+  
 ## How to use these docs with LLMs
+
  
 - Share the Architecture page for context on the React ↔ Tauri boundary and typed command layer.
 - Share the Tech Stack page for understanding dependencies and design decisions.

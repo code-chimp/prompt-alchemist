@@ -2,11 +2,11 @@
 
 **Epic:** 0 - CI/CD & Release Infrastructure  
 **Story ID:** 0-5-pipeline-optimization-with-caching  
-**Status:** done  
+**Status:** in-progress  
 **Estimated Effort:** Small (3-5 hours)  
 **Actual Effort:** 0.5 hours  
 **Created:** 2026-01-01  
-**Completed:** 2026-01-03  
+**Completed:** TBD  
 **Dependencies:** Story 0.1 (integration workflow), Story 0.2 (main workflow)
 
 ---

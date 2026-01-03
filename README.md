@@ -8,6 +8,9 @@
 
 ![Code Style: ESLint + Prettier](https://img.shields.io/badge/Code%20Style-ESLint%20%2B%20Prettier-4B32C3) ![Tests: Vitest + Playwright](https://img.shields.io/badge/Tests-Vitest%20%2B%20Playwright-6E9F18)
 
+[![CI - Integration](https://github.com/code-chimp/prompt-alchemist/actions/workflows/ci-integration.yml/badge.svg?branch=integration)](https://github.com/code-chimp/prompt-alchemist/actions/workflows/ci-integration.yml)
+[![CI/CD - Main & Release](https://github.com/code-chimp/prompt-alchemist/actions/workflows/ci-main.yml/badge.svg?branch=main)](https://github.com/code-chimp/prompt-alchemist/actions/workflows/ci-main.yml)
+
 Prompt Alchemist empowers developers and prompt engineers to build better LLM interactions through reusable components. Create libraries of expert personas, architectural patterns, and guardrails, then compose them into consistent, high-quality prompts that get better results from ChatGPT, Claude, Grok, and other LLMs.
 
 **Note:** This is an early-stage prototype demonstrating Tauri's capabilities in building performant desktop tools for developer workflows.
