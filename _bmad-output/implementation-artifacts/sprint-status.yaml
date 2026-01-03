@@ -42,7 +42,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   epic-0: in-progress
   0-1-github-actions-integration-workflow-quality-gates: done
-  0-2-github-actions-main-release-workflow-multi-platform-builds: review
+  0-2-github-actions-main-release-workflow-multi-platform-builds: done
   0-3-release-automation-with-version-tags: done
   0-4-branch-protection-rules-dependabot-configuration: ready-for-dev
   0-5-pipeline-optimization-with-caching: ready-for-dev
