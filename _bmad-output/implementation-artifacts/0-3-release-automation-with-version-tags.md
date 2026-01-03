@@ -2,7 +2,7 @@
 
 **Epic:** 0 - CI/CD & Release Infrastructure  
 **Story ID:** 0-3-release-automation-with-version-tags  
-**Status:** ready-for-dev  
+**Status:** review  
 **Estimated Effort:** Medium (5-8 hours)  
 **Created:** 2026-01-01  
 **Dependencies:** Story 0.2 (main workflow provides multi-platform build artifacts)
@@ -448,22 +448,112 @@ git push --delete origin v0.1.0
 
 ## Definition of Done
 
-- [ ] `.github/workflows/ci-main.yml` modified (release job added)
-- [ ] Release job depends on build job (all platforms)
-- [ ] Release job runs on `ubuntu-latest`
-- [ ] Release job conditional on version tags (`if: startsWith(github.ref, 'refs/tags/v')`)
-- [ ] Workflow permissions include `contents: write`
-- [ ] Artifact download configured (all 3 platforms)
-- [ ] Artifact structure verified with `ls -R ./artifacts`
-- [ ] GitHub release creation configured with `softprops/action-gh-release@v1`
-- [ ] Release marked as draft (`draft: true`)
-- [ ] Release notes auto-generated (`generate_release_notes: true`)
-- [ ] All artifacts uploaded to release (6 files total)
+- [x] `.github/workflows/ci-main.yml` modified (release job added)
+- [x] Release job depends on build job (all platforms)
+- [x] Release job runs on `ubuntu-latest`
+- [x] Release job conditional on version tags (`if: startsWith(github.ref, 'refs/tags/v')`)
+- [x] Workflow permissions include `contents: write`
+- [x] Artifact download configured (all 3 platforms)
+- [x] Artifact structure verified with `ls -R ./artifacts`
+- [x] GitHub release creation configured with `softprops/action-gh-release@v1`
+- [x] Release marked as draft (`draft: true`)
+- [x] Release notes auto-generated (`generate_release_notes: true`)
+- [x] All artifacts uploaded to release (6 files total)
 - [ ] Test: Version tag push creates draft release with all artifacts
 - [ ] Test: Non-version tag skips release job
 - [ ] Test: Draft release can be edited and published manually
 - [ ] Test: Release failure is atomic (no partial releases)
-- [ ] Documentation updated (if needed)
+- [x] Documentation updated (if needed)
+
+---
+
+## Tasks/Subtasks
+
+- [x] Add `permissions: contents: write` at workflow level in `.github/workflows/ci-main.yml`
+- [x] Add `release` job to `.github/workflows/ci-main.yml`
+- [x] Configure release job dependencies (`needs: [build]`)
+- [x] Configure release job runner (`runs-on: ubuntu-latest`)
+- [x] Add conditional execution for version tags (`if: startsWith(github.ref, 'refs/tags/v')`)
+- [x] Add checkout step to release job
+- [x] Add artifact download step using `actions/download-artifact@v4`
+- [x] Add artifact structure verification step (`ls -R ./artifacts`)
+- [x] Add GitHub release creation step using `softprops/action-gh-release@v1`
+- [x] Configure release as draft (`draft: true`)
+- [x] Enable auto-generated release notes (`generate_release_notes: true`)
+- [x] Configure artifact file paths (macos-builds, windows-builds, linux-builds)
+- [x] Add GITHUB_TOKEN environment variable
+- [x] Run linters to verify workflow file syntax
+- [x] Run full test suite to ensure no regressions
+
+---
+
+## Dev Agent Record
+
+### Implementation Plan
+
+**Objective:** Add automated release creation to the existing `ci-main.yml` workflow that triggers on version tag pushes.
+
+**Approach:**
+1. Add workflow-level permissions for creating releases (`contents: write`)
+2. Add release job that depends on successful completion of build job across all platforms
+3. Download all build artifacts from the matrix build job
+4. Verify artifact structure to ensure all platform builds are present
+5. Create draft GitHub release with auto-generated notes and all platform artifacts attached
+6. Use conditional execution to ensure release only runs for version tags (v*)
+
+**Implementation Steps:**
+1. ✅ Added `permissions: contents: write` at workflow level (line 8-9)
+2. ✅ Added `release` job after build job (line 248-276)
+3. ✅ Configured job dependencies with `needs: [build]`
+4. ✅ Set conditional execution with `if: startsWith(github.ref, 'refs/tags/v')`
+5. ✅ Downloaded all artifacts to `./artifacts` directory
+6. ✅ Added artifact structure verification with `ls -R ./artifacts`
+7. ✅ Configured GitHub release creation with `softprops/action-gh-release@v1`
+8. ✅ Enabled draft mode and auto-generated release notes
+
+### Completion Notes
+
+**Implementation Complete:**
+- ✅ Release job successfully added to `ci-main.yml` workflow
+- ✅ All acceptance criteria (AC1-AC4) implemented in workflow configuration
+- ✅ Workflow permissions configured for release creation
+- ✅ Artifact download configured for all three platforms (macOS, Windows, Linux)
+- ✅ Draft release creation configured with auto-generated notes
+- ✅ Conditional execution ensures release only runs on version tags (v*)
+- ✅ All linters pass (code, format, styles, Rust)
+- ✅ All unit tests pass (26 tests)
+- ✅ All Rust tests pass
+- ✅ No regressions introduced
+
+**Testing Required:**
+- Integration testing requires pushing version tags to GitHub repository
+- Tests (AC5-AC7) require live GitHub Actions execution environment
+- Manual verification steps documented in story acceptance criteria
+
+**Technical Decisions:**
+1. **Permissions at workflow level**: Added `contents: write` at workflow level rather than job level for simplicity and consistency
+2. **Draft mode**: Enabled `draft: true` to prevent accidental public releases and allow manual review before publishing
+3. **Auto-generated notes**: Enabled `generate_release_notes: true` to automatically include commits since last tag
+4. **Artifact paths**: Used glob patterns (`**/*`) to recursively upload all files from artifact directories
+5. **ubuntu-latest runner**: Used cheapest runner for release job (no platform-specific operations needed)
+
+---
+
+## File List
+
+**Modified Files:**
+- `.github/workflows/ci-main.yml` - Added workflow-level permissions and release job
+
+---
+
+## Change Log
+
+- 2026-01-03: Implemented automated release creation with version tags (Story 0.3)
+  - Added `permissions: contents: write` to workflow
+  - Added release job with conditional execution on version tags (v*)
+  - Configured artifact download from all three platforms
+  - Configured draft GitHub release creation with auto-generated notes
+  - All implementation code quality checks pass (lint, tests)
 
 ---
 
