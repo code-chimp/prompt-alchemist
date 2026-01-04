@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - integration
+  pull_request:
+    branches:
+      - integration
 
 concurrency:
   group: integration-quality-gates-${{ github.ref }}
