@@ -1,0 +1,27 @@
+name: 'Setup Node.js and Dependencies'
+description: 'Checkout code, setup Node.js with cache, and install npm dependencies'
+
+inputs:
+  node-version-file:
+    description: 'Path to .nvmrc file'
+    required: false
+    default: '.nvmrc'
+
+runs:
+  using: 'composite'
+  steps:
+    # Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Setup Node.js with npm caching enabled for faster installs
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: ${{ inputs.node-version-file }}
+        cache: 'npm'
+
+    # Install dependencies reproducibly using package-lock.json
+    - name: Install npm dependencies
+      shell: bash
+      run: npm ci

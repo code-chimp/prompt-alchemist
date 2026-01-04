@@ -1,0 +1,134 @@
+# Security scanning workflow that runs automated vulnerability checks
+# This workflow complements Dependabot by providing deeper security analysis
+#
+# Runs on:
+#   - Every push to main/integration branches
+#   - Every pull request to main/integration
+#   - Scheduled weekly on Mondays at 9 AM UTC
+#
+# Three types of scans:
+#   1. npm-audit: Checks Node.js dependencies for known CVEs
+#   2. cargo-audit: Checks Rust dependencies for known vulnerabilities
+#   3. CodeQL: Static code analysis for JavaScript/TypeScript security issues
+#
+name: Security Scanning
+
+on:
+  push:
+    branches:
+      - main
+      - integration
+  pull_request:
+    branches:
+      - main
+      - integration
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC to catch newly disclosed vulnerabilities
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read # Read repository code
+  security-events: write # Upload CodeQL results to Security tab
+
+jobs:
+  # Scan Node.js dependencies for security vulnerabilities
+  npm-audit:
+    name: NPM Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      # Run npm audit and generate both console output and JSON report
+      # Uses `|| true` to prevent workflow failure on vulnerabilities (informational only)
+      # Audit level "moderate" catches medium and above severity issues
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate || true
+          npm audit --json > npm-audit-report.json || true
+
+      # Upload JSON report for review in workflow artifacts
+      # if: always() ensures upload even if audit finds issues
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          retention-days: 7
+
+  # Scan Rust dependencies for known CVEs using cargo-audit
+  cargo-audit:
+    name: Cargo Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # Install cargo-audit CLI tool for Rust CVE scanning
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      # Run audit in src-tauri directory and output JSON report
+      # Uses `|| true` to prevent workflow failure (informational only)
+      - name: Run cargo audit
+        working-directory: src-tauri
+        run: |
+          cargo audit --json > ../cargo-audit-report.json || true
+
+      # Upload JSON report for review
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cargo-audit-report
+          path: cargo-audit-report.json
+          retention-days: 7
+
+  # Static code analysis using GitHub's CodeQL
+  # Scans JavaScript and TypeScript for security vulnerabilities and code quality issues
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write # Upload SARIF results
+      actions: read # Read workflow details
+      contents: read # Checkout code
+    strategy:
+      fail-fast: false
+      matrix:
+        # Scan both JS and TS separately for comprehensive coverage
+        language: ['javascript', 'typescript']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Initialize CodeQL analysis with security-and-quality query suite
+      # This includes both security vulnerabilities and code quality checks
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      # Let CodeQL automatically build the codebase
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # Perform analysis and upload results to GitHub Security tab
+      # Results are visible in the repository's Security > Code scanning alerts
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'

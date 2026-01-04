@@ -1,0 +1,134 @@
+# Reusable workflow that runs all quality gate checks
+# This workflow is called by both ci-integration.yml and ci-main.yml to ensure consistency
+# across all branches. It runs lint, typecheck, and all test suites in parallel.
+#
+# Usage:
+#   jobs:
+#     quality-gates:
+#       uses: ./.github/workflows/quality-gates.yml
+#       with:
+#         upload-coverage: true  # Optional: default is true
+#
+name: Quality Gates (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      upload-coverage:
+        description: 'Whether to upload coverage artifacts (disable for faster PR checks)'
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Run all linters: ESLint, Prettier, Stylelint, Cargo clippy, and Cargo fmt
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: ./.github/actions/setup-node-deps
+
+      # Rust toolchain needed because `npm run lint` includes Rust linting
+      # (lint:rust:clippy and lint:rust:format)
+      - uses: ./.github/actions/setup-rust
+        with:
+          components: 'rustfmt, clippy'
+
+      # Runs: eslint, prettier, stylelint, cargo clippy, cargo fmt
+      - name: Run linters
+        run: npm run lint
+
+  # Run TypeScript and Rust type checking
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: ./.github/actions/setup-node-deps
+
+      # Rust toolchain needed because `npm run check` includes Rust checks
+      # (check:rust which runs clippy and fmt)
+      - uses: ./.github/actions/setup-rust
+        with:
+          components: 'rustfmt, clippy'
+
+      # Runs: tsc --noEmit, validate-lockfile, and Rust checks
+      - name: Run type checks
+        run: npm run check
+
+  # Run Vitest unit tests with coverage collection
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: ./.github/actions/setup-node-deps
+
+      # Run tests with coverage reporting enabled
+      - name: Run unit tests with coverage
+        run: npm run test:unit:coverage
+
+      # Upload coverage artifacts for review (configurable via workflow input)
+      # Retention is kept short (3 days) as these are not long-term artifacts
+      - name: Upload coverage artifacts
+        if: inputs.upload-coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit-tests
+          path: coverage/
+          retention-days: 3
+
+  # Run Playwright E2E tests
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: ./.github/actions/setup-node-deps
+
+      # Install Playwright browsers with caching (~5 min savings on cache hit)
+      - uses: ./.github/actions/setup-playwright
+
+      # Run E2E tests against Chromium
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      # Upload test results and HTML report only on failure for debugging
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 3
+
+  # Run Rust unit tests and Cargo checks (clippy + fmt)
+  test-rust:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: ./.github/actions/setup-node-deps
+
+      # Full Tauri system dependencies needed for Rust build/test
+      # (webkit2gtk, GTK, SSL, etc.)
+      - uses: ./.github/actions/setup-tauri-deps
+
+      # Install Rust with clippy and rustfmt for checks
+      - uses: ./.github/actions/setup-rust
+        with:
+          components: 'rustfmt, clippy'
+
+      # Run Rust unit tests
+      - name: Run Rust tests
+        run: npm run test:rust
+
+      # Run Cargo clippy (linter) and cargo fmt (formatter check)
+      - name: Run Rust checks (clippy + format)
+        run: npm run check:rust

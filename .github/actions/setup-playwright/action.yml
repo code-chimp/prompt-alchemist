@@ -1,0 +1,28 @@
+name: 'Setup Playwright'
+description: 'Install Playwright browsers with caching'
+
+runs:
+  using: 'composite'
+  steps:
+    # Extract the current Playwright version from package-lock.json
+    # This ensures cache invalidation when Playwright is upgraded
+    - name: Get Playwright version
+      shell: bash
+      id: playwright-version
+      run: echo "version=$(npm list @playwright/test --depth=0 --json | jq -r '.dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
+
+    # Cache Playwright browsers based on version to avoid re-downloading (~400MB)
+    # Typical cache hit saves ~5 minutes per E2E test job
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+    # Only install browsers if cache miss occurred
+    # --with-deps installs system dependencies (webkit, ffmpeg, etc.)
+    - name: Install Playwright browsers
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: npx playwright install --with-deps
