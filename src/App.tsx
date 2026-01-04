@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import './App.css';
 import reactLogo from './assets/react.svg';
+import { ThemeToggle } from './components/ThemeToggle';
 import { Button } from './components/ui/button';
 import {
   Card,
@@ -30,6 +31,9 @@ function App() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gray-100 text-zinc-950/60 dark:bg-zinc-800 dark:text-gray-100">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="absolute inset-0 -z-10 size-full bg-white bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[14px_24px] dark:bg-black">
         <div className="absolute-center-xy animate-pulse-slow size-full bg-[radial-gradient(circle_500px_at_50%_300px,#f7b34814,transparent)]" />
       </div>
