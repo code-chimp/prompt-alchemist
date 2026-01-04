@@ -34,6 +34,8 @@
 
 **Need help?** Jump to [Troubleshooting](#troubleshooting) for common error solutions.
 
+**Short on time?** Read this section and [Overview](#overview) now; treat the rest of the guide as reference.
+
 ---
 
 ## Overview
@@ -897,6 +899,17 @@ console.info('User logged in:', userId);
 // eslint-disable-next-line no-console
 console.log('Legitimate use case:', data);
 ```
+
+---
+
+### Re-running Failed Jobs
+
+When a workflow fails, GitHub exposes two buttons at the top-right of the run page:
+
+- **Re-run all jobs** – reruns every job from the beginning.
+- **Re-run failed jobs** – reruns only the jobs that failed in the last run.
+
+Use **Re-run failed jobs** for flaky or transient failures (network issues, timeouts, intermittent test flakes). Use **Re-run all jobs** after you’ve pushed a fix, changed dependencies, or suspect the environment/cache is stale.
 
 ---
 
