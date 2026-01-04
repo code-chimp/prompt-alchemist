@@ -17,7 +17,7 @@ If you update architecture, scripts, or stack, please keep these docs in sync.
 - [Testing Guide](./4-testing-guide.md)
 - [Contributing](./5-contributing.md)
 - [Personalizing](./6-personalizing.md)
-- [TECH_DEBT](../TECH_DEBT.md) 	From template to production
+- [TECH_DEBT](../TECH_DEBT.md) - From template to production
   
 ## CI/CD & Deployment
 - [CI/CD Pipeline Guide](./cicd.md) - Workflows, branch strategy, release process
@@ -36,4 +36,3 @@ If you update architecture, scripts, or stack, please keep these docs in sync.
 ## License
 
 This template is licensed under the BSD 3-Clause License. You may use, modify, and redistribute it (including in commercial projects) as long as you retain the copyright and license notice and do not use the author's name to endorse derived products.
-
