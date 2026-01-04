@@ -18,6 +18,22 @@ const config = {
       },
     },
     extend: {
+      colors: {
+        base: 'var(--base)',
+        mantle: 'var(--mantle)',
+        crust: 'var(--crust)',
+        text: 'var(--text)',
+        subtext1: 'var(--subtext-1)',
+        subtext0: 'var(--subtext-0)',
+        mauve: 'var(--mauve)',
+        blue: 'var(--blue)',
+        green: 'var(--green)',
+        yellow: 'var(--yellow)',
+        red: 'var(--red)',
+        surface0: 'var(--surface-0)',
+        surface1: 'var(--surface-1)',
+        surface2: 'var(--surface-2)',
+      },
       keyframes: {
         'accordion-down': {
           from: { height: '0' },
